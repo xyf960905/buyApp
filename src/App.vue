@@ -11,23 +11,23 @@
                     <a target="_blank" href="#"></a>
                 </div>
                 <div id="menu" class="right-box">
-                    <span style="display: none;">
-                        <a href="" class="">登录</a>
+                    <span  v-show="$store.state.login==false">
+                        <router-link to="/login">登录</router-link>
                         <strong>|</strong>
                         <a href="" class="">注册</a>
                         <strong>|</strong>
                     </span>
-                    <span>
+                    <span v-show="$store.state.login==true">
                         <a href="" class="">会员中心</a>
                         <strong>|</strong>
-                        <a>退出</a>
+                        <a @click="logout">退出</a>
                         <strong>|</strong>
                     </span>
-                    <a href="" class="">
+                    <router-link to="/shopcart">
                         <i class="iconfont icon-cart"></i>购物车(
                         <span id="shoppingCartCount">
-                            <span>4</span>
-                        </span>)</a>
+                            <span>{{$store.getters.totle}}</span>
+                        </span>)</router-link>
                 </div>
             </div>
         </div>
@@ -119,8 +119,16 @@
 
 export default {
   name: 'app',
-  components: {
-    // HelloWorld
+  methods:{
+      logout(){
+          this.$axios.get("site/account/logout").then(result=>{
+              if(result.data.status===0){
+                  this.$Message.success(result.data.message);
+                  this.$router.push("/index");
+                  this.$store.commit("islogin",false);
+              }
+          })
+      }
   }
 }
 </script>

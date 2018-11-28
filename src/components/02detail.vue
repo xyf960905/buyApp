@@ -13,7 +13,12 @@
                 <div class="wrap-box">
                     <div class="left-925">
                         <div class="goods-box clearfix">
-                            <div class="pic-box"></div>
+                            <div class="pic-box">
+                                <ProductZoomer v-if="images.normal_size.length"
+                                    :base-images="images"
+                                    :base-zoomer-options="zoomerOptions"
+                                />
+                            </div>
                             <div class="goods-spec">
                                 <h1>{{goodsinfo.title}}</h1>
                                 <p class="subtitle">{{goodsinfo.sub_title}}</p>
@@ -52,7 +57,7 @@
                                         <dd>
                                             <div id="buyButton" class="btn-buy">
                                                 <button onclick="cartAdd(this,'/',1,'/shopping.html');" class="buy">立即购买</button>
-                                                <button onclick="cartAdd(this,'/',0,'/cart.html');" class="add">加入购物车</button>
+                                                <button  @click="add2cart" class="add">加入购物车</button>
                                             </div>
                                         </dd>
                                     </dl>
@@ -168,7 +173,23 @@ export default {
       totalcount: 0,
       pageIndex: 1,
       pageSize: 10,
-      writecomment: ""
+      writecomment: "",
+    //   放大镜需要的参数
+    images:
+    {                                                                                                             
+      'normal_size': [
+            
+          ]                                                                              
+     } ,
+     zoomerOptions:{
+        'zoomFactor': 4,
+        'pane': 'container-round',
+        'hoverDelay': 300,
+        'namespace': 'inline-zoomer',
+        'move_by_click':true,
+        'scroll_items': 5,
+        'choosed_thumb_border_color': "#bbdefb"
+     }
     };
   },
   methods: {
@@ -183,9 +204,17 @@ export default {
           this.goodsinfo = result.data.message.goodsinfo;
           //   热卖商品
           this.hotgoodslist = result.data.message.hotgoodslist;
+          this.images.normal_size=[];
           //   图片列表
           this.imglist = result.data.message.imglist;
-        });
+            this.imglist.forEach(v => {
+          this.images.normal_size.push({
+              id:v.id,
+              url:v.original_path
+          })
+                       
+            });
+});
       this.getComments();
     },
     getComments() {
@@ -215,22 +244,19 @@ export default {
     addcomment() {
       // alert(this.writecomment)
       if (this.writecomment.trim() == "") {
-         this.$Message.warning('不能为空');
-        this.writecomment="";
+        this.$Message.warning("不能为空");
+        this.writecomment = "";
       } else {
         this.$axios
-          .post(
-            `site/validate/comment/post/goods/${
-              this.ID
-            }`,
-            { commenttxt: this.writecomment }
-          )
+          .post(`site/validate/comment/post/goods/${this.ID}`, {
+            commenttxt: this.writecomment
+          })
           .then(reponse => {
             if (reponse.data.status) {
-         this.$Message.warning('添加失败');
-            //   alert("添加错误");
+              this.$Message.warning("添加失败");
+              //   alert("添加错误");
             } else {
-            this.$Message.success('评论成功');
+              this.$Message.success("评论成功");
               this.writecomment = "";
               this.getComments();
               // alert(1)
@@ -238,6 +264,14 @@ export default {
             // console.log(reponse);
           });
       }
+    },
+    add2cart() {
+      this.$store.commit("increment", {
+        ID: this.ID,
+        buyCount: this.buyCount
+      });
+      this.buyCount = 1;
+      this.$Message.success("加入成功");
     }
   },
   created() {
@@ -245,6 +279,7 @@ export default {
   },
   watch: {
     $route() {
+        this.images.normal_size=[];
       this.initData();
     }
   }
@@ -258,6 +293,14 @@ export default {
 }
 .ivu-back-top span {
   font-size: 100px;
+}
+.inline-zoomer-zoomer-box{
+    width: 395px;
+    /* height: 320px; */
+}
+.thumb-list img{
+    width: 100px;
+    height: 100px;
 }
 </style>
 
