@@ -35,6 +35,19 @@ import shopcart from "./components/03shopcart.vue";
 import order from "./components/04order.vue";
 // 导入登录页面
 import login from "./components/05login.vue";
+// 支付页面
+import payMoney from "./components/06payMoney.vue";
+// 支付成功页面
+import paySuccess from "./components/07paySuccess.vue";
+// 会员中心页面
+import vipCenter from "./components/08vipCenter.vue";
+// 会员中心订单列表页面
+import orderList from "./components/09orderList.vue";
+// 会员中心订单详情页面
+import orderDetail from "./components/10orderDetail.vue";
+// 会员中心首页
+import orderIndex from "./components/11orderIndex.vue";
+
 
 
 let routes = [
@@ -56,21 +69,60 @@ let routes = [
   },
   {
     path: "/order/:selectedids",
-    component: order
+    component: order,
+    meta: { requiresAuth: true }
   },
   {
     path: "/login",
     component: login
+  },
+  {
+    path: "/payMoney/:orderid",
+    component: payMoney,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: "/paySuccess",
+    component: paySuccess,
+    meta: { requiresAuth: true }
+  },
+  {
+    path:"/vipCenter",
+    component:vipCenter,
+    children: [
+      {
+        // 当 /user/:id/profile 匹配成功，
+        // UserProfile 会被渲染在 User 的 <router-view> 中
+        path: '',
+        redirect: 'index'
+      },
+      {
+        // 当 /user/:id/profile 匹配成功，
+        // UserProfile 会被渲染在 User 的 <router-view> 中
+        path: 'orderList',
+        component: orderList
+      },
+      {
+        // 当 /user/:id/posts 匹配成功
+        // UserPosts 会被渲染在 User 的 <router-view> 中
+        path: 'orderDetail',
+        component: orderDetail
+      },{
+        path:'index',
+        component:orderIndex
+      }
+    ]
   }
 ];
 let router = new VueRouter({
-  routes
+  routes,
+  mode: 'history'
 });
 // 导航守卫
 router.beforeEach((to, from, next) => {
   // alert("守卫");
 
-  if (to.path.indexOf("/order") !=-1) {
+  if (to.meta.requiresAuth) {
     axios.get("site/account/islogin").then(result => {
       if (result.data.code != "logined") {
         Vue.prototype.$Message.warning("请先登录");
@@ -130,7 +182,10 @@ const store = new Vuex.Store({
     },   
     islogin(state,obj){
         state.login=obj;
-    }   
+    },
+    del(state,obj){
+      Vue.delete(state.count,obj);
+    } 
   }
 });
 
